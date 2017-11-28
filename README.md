@@ -18,7 +18,8 @@ time int(11) NOT NULL,
 checked tinyint DEFAULT 0 NOT NULL,
 message_id int(11) NOT NULL, 
 edited tinyint default 0 NOT NULL, 
-PRIMARY KEY (id)
+PRIMARY KEY (id),
+FOREIGN KEY (chat_id) REFERENCES clients (client_id)
 );
 7. Создать в mysql нового пользователя "supbot" c паролем "pass" и дать права на БД supbot. 
 CREATE USER 'supbot'@'localhost' IDENTIFIED BY 'pass';
