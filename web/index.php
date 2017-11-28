@@ -1,12 +1,15 @@
 <?php
 require_once '../spl_autoload_reg.php';
-require_once '../src/config/config.php';
 
 use Controllers\MainController;
 use Controllers\MessagesController;
 use Controllers\WebhookController;
 use Controllers\Router;
 use Controllers\FailRoutController;
+use Models\Stasich\ClassConfig;
+
+$config = require '../src/config/config.php';
+ClassConfig::setConfig($config);
 
 $rout = new Router();
 switch ($rout->get()) {
