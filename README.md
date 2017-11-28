@@ -15,7 +15,7 @@ id int(11) NOT NULL AUTO_INCREMENT,
 text text DEFAULT NULL, 
 chat_id int(11) NOT NULL, 
 time int(11) NOT NULL, 
-favorite tinyint DEFAULT 0 NOT NULL,
+checked tinyint DEFAULT 0 NOT NULL,
 message_id int(11) NOT NULL, 
 edited tinyint default 0 NOT NULL, 
 PRIMARY KEY (id)
