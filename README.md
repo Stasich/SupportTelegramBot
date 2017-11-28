@@ -14,7 +14,7 @@ PRIMARY KEY (client_id));
 id int(11) NOT NULL AUTO_INCREMENT, 
 text text DEFAULT NULL, 
 chat_id int(11) NOT NULL, 
-time varchar(20) NOT NULL, 
+time int(11) NOT NULL, 
 favorite tinyint DEFAULT 0 NOT NULL,
 message_id int(11) NOT NULL, 
 edited tinyint default 0 NOT NULL, 
