@@ -5,6 +5,7 @@ class SupBot
 {
     private $pdo;
     private $token;
+    private $webhookArr;
 
     public function __construct()
     {
@@ -18,47 +19,87 @@ class SupBot
             );
         } catch (\Exception $e) {
             echo 'Нет соединения с базой данных.';
+            die();
         }
     }
 
-    public function addDataToDB($json)
+    public function addDataToDB($webhookJson)
     {
-        $webhookData = json_decode($json, true);
-        //echo "<pre>"; print_r($webhookData); echo "</pre>";
-        extract($this->parseWebhook($webhookData));
+        $this->parseWebhook($webhookJson);
 
-        if (!$this->isClientInDB($clientId)) {
-            $this->addClientInDB($clientId);
+        if (!$this->isClientInDB($this->webhookArr['client_id'])) {
+            $this->addClientToDB();
         }
     }
 
     private function isClientInDB($clientId)
     {
+        return false;
+    }
+
+    private function addClientToDB()
+    {
+        $this->webhookArr['avatar'] = $this->getAvatarFromApi();
         return true;
     }
 
-    private function addClientInDB($clientId)
+    private function parseWebhook($webhookJson)
     {
-        return true;
-    }
-
-    private function parseWebhook($webhookData)
-    {
-        $resultArr['clientId'] = $webhookData['message']['from']['id'];
-        $resultArr['firstName'] = $webhookData['message']['from']['first_name'];
-        $resultArr['lastName'] = (isset($webhookData['message']['from']['last_name'])) ?
+        $webhookData = json_decode($webhookJson, true);
+        $resultArr['client_id'] = $webhookData['message']['from']['id'];
+        $resultArr['first_name'] = $webhookData['message']['from']['first_name'];
+        $resultArr['last_name'] = (isset($webhookData['message']['from']['last_name'])) ?
             $webhookData['message']['from']['last_name'] : null;
-        $resultArr['avatar'] = $this->setAvatar($resultArr['clientId']);
         $resultArr['text'] = $webhookData['message']['text'];
-        $resultArr['chatId'] = $webhookData['message']['from']['id'];
+        $resultArr['chat_id'] = $webhookData['message']['from']['id'];
         $resultArr['time'] = $webhookData['message']['date'];
-        $resultArr['messageId'] = $webhookData['message']['message_id'];
+        $resultArr['message_id'] = $webhookData['message']['message_id'];
 
-        return $resultArr;
+        $this->webhookArr = $resultArr;
     }
 
-    private function setAvatar($clientId)
+    private function getAvatarFromApi()
     {
-        return '/avatars/';
+        $jsonOfPhoto = file_get_contents(
+            'https://api.telegram.org'.
+            '/bot' . $this->token .
+            '/getUserProfilePhotos' .
+            '?user_id=' . $this->webhookArr['client_id']
+        );
+        $listOfPhoto = json_decode($jsonOfPhoto, true);
+
+        if ($listOfPhoto['ok'] === false)
+            return null;
+        if ($listOfPhoto['result']['total_count'] == 0)
+            return null;
+
+        $jsonPhotoInfo = file_get_contents(
+            'https://api.telegram.org'.
+            '/bot' . $this->token .
+            '/getFILE'.
+            '?file_id=' . $listOfPhoto['result']['photos'][0][0]['file_id']
+        );
+        $photoInfo = json_decode($jsonPhotoInfo, true);
+        $photoPath = $photoInfo['result']['file_path'];
+
+        $fileName = $this->webhookArr['client_id'] . '.jpg';
+        $file = fopen('avatars/'.$fileName, 'w');
+
+        $ch = curl_init();
+        curl_setopt(
+            $ch,
+            CURLOPT_URL,
+            'https://api.telegram.org'.
+            '/file'.
+            '/bot'. $this->token .
+            '/' . $photoPath
+        );
+        curl_setopt($ch, CURLOPT_FILE, $file);
+        curl_exec($ch);
+        curl_close($ch);
+
+        fclose($file);
+
+        return $fileName;
     }
 }
