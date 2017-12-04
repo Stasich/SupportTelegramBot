@@ -78,7 +78,7 @@ class SupBot
         $resultArr['first_name'] = $webhookData['message']['from']['first_name'];
         $resultArr['last_name'] = (isset($webhookData['message']['from']['last_name'])) ?
             $webhookData['message']['from']['last_name'] : null;
-        $resultArr['text'] = $webhookData['message']['text'];
+        $resultArr['text'] = (isset($webhookData['message']['text'])) ? $webhookData['message']['text'] : 'notTextMsg';
         $resultArr['chat_id'] = $webhookData['message']['from']['id'];
         $resultArr['time'] = $webhookData['message']['date'];
         $resultArr['message_id'] = $webhookData['message']['message_id'];
