@@ -1,7 +1,7 @@
 Создаём БД
 1. mysql -uroot -p
 2. drop database if exists supbot;
-3. create database supbot character set=utf8; 
+3. create database supbot character set=utf8mb4; 
 4. use supbot;
 5. CREATE TABLE clients (
 client_id int(11) NOT NULL, 
