@@ -23,13 +23,14 @@ class SupBot
         }
     }
 
-    public function addDataToDB($webhookJson)
+    public function addWebhookDataToDB($webhookJson)
     {
         $this->webhookArr = $this->parseWebhook($webhookJson);
 
         if (!$this->isClientInDB($this->webhookArr['client_id'])) {
             $this->addClientToDB();
         }
+        $this->addMessageFromWebHook();
     }
 
     private function isClientInDB($clientId)
@@ -128,5 +129,21 @@ class SupBot
         fclose($file);
 
         return $fileName;
+    }
+
+    private function addMessageFromWebHook()
+    {
+        $query = "INSERT INTO messages (text, chat_id, time, message_id) values (
+          :text,
+          :chat_id,
+          :time,
+          :message_id
+        )";
+        $stmt = $this->pdo->prepare($query);
+        $stmt->bindValue(':text', $this->webhookArr['text']);
+        $stmt->bindValue(':chat_id', $this->webhookArr['client_id']);
+        $stmt->bindValue(':time', $this->webhookArr['time']);
+        $stmt->bindValue(':message_id', $this->webhookArr['message_id']);
+        $stmt->execute();
     }
 }
