@@ -25,7 +25,7 @@ class SupBot
 
     public function addDataToDB($webhookJson)
     {
-        $this->parseWebhook($webhookJson);
+        $this->webhookArr = $this->parseWebhook($webhookJson);
 
         if (!$this->isClientInDB($this->webhookArr['client_id'])) {
             $this->addClientToDB();
@@ -34,12 +34,39 @@ class SupBot
 
     private function isClientInDB($clientId)
     {
-        return false;
+        $query = 'select client_id from clients where client_id = :client_id';
+        $stmt = $this->pdo->prepare($query);
+        $stmt->execute([
+           ':client_id' => $clientId
+        ]);
+        if ($stmt->fetch() === false)
+            return false;
+        return true;
     }
 
     private function addClientToDB()
     {
         $this->webhookArr['avatar'] = $this->getAvatarFromApi();
+
+        $query = "INSERT INTO clients values (
+                    :client_id,
+                    :first_name,
+                    :last_name,
+                    :avatar,
+                    :favorite
+        )";
+
+        $stmt = $this->pdo->prepare($query);
+        $stmt->bindValue(':client_id', $this->webhookArr['client_id']);
+        $stmt->bindValue(':first_name', $this->webhookArr['first_name']);
+        $stmt->bindValue(
+            ':last_name',
+            (isset($this->webhookArr['last_name'])) ? $this->webhookArr['last_name'] : null
+        );
+        $stmt->bindValue(':avatar', $this->webhookArr['avatar']);
+        $stmt->bindValue(':favorite', '0');
+        if (!$stmt->execute())
+            return false;
         return true;
     }
 
@@ -55,7 +82,7 @@ class SupBot
         $resultArr['time'] = $webhookData['message']['date'];
         $resultArr['message_id'] = $webhookData['message']['message_id'];
 
-        $this->webhookArr = $resultArr;
+        return $resultArr;
     }
 
     private function getAvatarFromApi()
