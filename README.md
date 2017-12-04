@@ -15,7 +15,7 @@ id int not null auto_increment,
 type varchar(10) not null,
 PRIMARY KEY (id)
 );
-7. insert into owners (type) values (client), (support);
+7. insert into owners (type) values ('client'), ('support');
 8. CREATE TABLE messages (
 id int(11) NOT NULL AUTO_INCREMENT, 
 text text DEFAULT NULL, 
